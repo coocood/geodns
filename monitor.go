@@ -13,10 +13,10 @@ import (
 	"strconv"
 	"time"
 
-	"code.google.com/p/go.net/websocket"
 	"github.com/abh/go-metrics"
 	"github.com/gorilla/mux"
 	"github.com/miekg/dns"
+	"golang.org/x/net/websocket"
 )
 
 // Initial status message on websocket
