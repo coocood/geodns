@@ -4,7 +4,8 @@ import (
 	"sort"
 )
 
-type zoneLabelStats struct {
+// ZoneLabelStats type
+type ZoneLabelStats struct {
 	pos     int
 	rotated bool
 	log     []string
@@ -14,22 +15,27 @@ type zoneLabelStats struct {
 	close   chan bool
 }
 
-type labelStats []labelStat
+// LabelStats type
+type LabelStats []labelStat
 
-func (s labelStats) Len() int      { return len(s) }
-func (s labelStats) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+// Len func
+func (s LabelStats) Len() int { return len(s) }
 
-type labelStatsByCount struct{ labelStats }
+// Swap func
+func (s LabelStats) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 
-func (s labelStatsByCount) Less(i, j int) bool { return s.labelStats[i].Count > s.labelStats[j].Count }
+type labelStatsByCount struct{ LabelStats }
+
+func (s labelStatsByCount) Less(i, j int) bool { return s.LabelStats[i].Count > s.LabelStats[j].Count }
 
 type labelStat struct {
 	Label string
 	Count int
 }
 
-func NewZoneLabelStats(size int) *zoneLabelStats {
-	zs := &zoneLabelStats{
+// NewZoneLabelStats func
+func NewZoneLabelStats(size int) *ZoneLabelStats {
+	zs := &ZoneLabelStats{
 		log:   make([]string, size),
 		in:    make(chan string, 100),
 		out:   make(chan []string),
@@ -40,7 +46,7 @@ func NewZoneLabelStats(size int) *zoneLabelStats {
 	return zs
 }
 
-func (zs *zoneLabelStats) receiver() {
+func (zs *ZoneLabelStats) receiver() {
 
 	for {
 		select {
@@ -59,19 +65,22 @@ func (zs *zoneLabelStats) receiver() {
 
 }
 
-func (zs *zoneLabelStats) Close() {
+// Close func
+func (zs *ZoneLabelStats) Close() {
 	zs.close <- true
 }
 
-func (zs *zoneLabelStats) Reset() {
+// Reset func
+func (zs *ZoneLabelStats) Reset() {
 	zs.reset <- true
 }
 
-func (zs *zoneLabelStats) Add(l string) {
+// Add func
+func (zs *ZoneLabelStats) Add(l string) {
 	zs.in <- l
 }
 
-func (zs *zoneLabelStats) add(l string) {
+func (zs *ZoneLabelStats) add(l string) {
 	zs.log[zs.pos] = l
 	zs.pos++
 	if zs.pos+1 > len(zs.log) {
@@ -80,9 +89,10 @@ func (zs *zoneLabelStats) add(l string) {
 	}
 }
 
-func (zs *zoneLabelStats) TopCounts(n int) labelStats {
+// TopCounts func
+func (zs *ZoneLabelStats) TopCounts(n int) LabelStats {
 	cm := zs.Counts()
-	top := make(labelStats, len(cm))
+	top := make(LabelStats, len(cm))
 	i := 0
 	for l, c := range cm {
 		top[i] = labelStat{l, c}
@@ -99,7 +109,8 @@ func (zs *zoneLabelStats) TopCounts(n int) labelStats {
 	return top
 }
 
-func (zs *zoneLabelStats) Counts() map[string]int {
+// Counts func
+func (zs *ZoneLabelStats) Counts() map[string]int {
 	log := (<-zs.out)
 
 	counts := make(map[string]int)

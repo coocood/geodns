@@ -6,18 +6,27 @@ import (
 	"strings"
 )
 
+// TargetOptions type
 type TargetOptions int
 
 const (
+	// TargetGlobal const
 	TargetGlobal = 1 << iota
+	// TargetContinent const
 	TargetContinent
+	// TargetCountry const
 	TargetCountry
+	// TargetRegionGroup const
 	TargetRegionGroup
+	// TargetRegion const
 	TargetRegion
+	// TargetASN const
 	TargetASN
+	// TargetIP const
 	TargetIP
 )
 
+// GetTargets func
 func (t TargetOptions) GetTargets(ip net.IP) ([]string, int) {
 
 	targets := make([]string, 0)

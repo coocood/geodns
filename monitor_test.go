@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	. "launchpad.net/gocheck"
 	"net/http"
 	"strings"
 	"time"
+
+	. "gopkg.in/check.v1"
 )
 
 type MonitorSuite struct {

@@ -1,8 +1,9 @@
 package main
 
 import (
-	. "launchpad.net/gocheck"
 	"net"
+
+	. "gopkg.in/check.v1"
 )
 
 type TargetingSuite struct {

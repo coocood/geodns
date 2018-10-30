@@ -1,16 +1,17 @@
 package main
 
 import (
-	"github.com/stathat/go"
 	"log"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/stathat/go"
 )
 
 func (zs *Zones) statHatPoster() {
 
-	if len(Config.StatHat.ApiKey) == 0 {
+	if len(Config.StatHat.APIKey) == 0 {
 		return
 	}
 
@@ -38,19 +39,19 @@ func (zs *Zones) statHatPoster() {
 
 			if zone.Logging != nil && zone.Logging.StatHat == true {
 
-				apiKey := zone.Logging.StatHatAPI
-				if len(apiKey) == 0 {
-					apiKey = Config.StatHat.ApiKey
+				APIKey := zone.Logging.StatHatAPI
+				if len(APIKey) == 0 {
+					APIKey = Config.StatHat.APIKey
 				}
-				if len(apiKey) == 0 {
+				if len(APIKey) == 0 {
 					continue
 				}
-				stathat.PostEZCount("zone "+name+" queries~"+suffix, Config.StatHat.ApiKey, int(newCount))
+				stathat.PostEZCount("zone "+name+" queries~"+suffix, Config.StatHat.APIKey, int(newCount))
 
 				ednsCount := zone.Metrics.EdnsQueries.Count()
 				newEdnsCount := ednsCount - lastEdnsCounts[name]
 				lastEdnsCounts[name] = ednsCount
-				stathat.PostEZCount("zone "+name+" edns queries~"+suffix, Config.StatHat.ApiKey, int(newEdnsCount))
+				stathat.PostEZCount("zone "+name+" edns queries~"+suffix, Config.StatHat.APIKey, int(newEdnsCount))
 
 			}
 		}
@@ -78,8 +79,8 @@ func statHatPoster() {
 		newQueries := current - lastQueryCount
 		lastQueryCount = current
 
-		stathat.PostEZCount("queries~"+suffix, Config.StatHat.ApiKey, int(newQueries))
-		stathat.PostEZValue("goroutines "+serverID, Config.StatHat.ApiKey, float64(runtime.NumGoroutine()))
+		stathat.PostEZCount("queries~"+suffix, Config.StatHat.APIKey, int(newQueries))
+		stathat.PostEZValue("goroutines "+serverID, Config.StatHat.APIKey, float64(runtime.NumGoroutine()))
 
 	}
 }

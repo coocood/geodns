@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/miekg/dns"
-	. "launchpad.net/gocheck"
+	. "gopkg.in/check.v1"
 )
 
 func (s *ConfigSuite) TestExampleComZone(c *C) {

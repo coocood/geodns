@@ -1,33 +1,35 @@
 package main
 
 import (
-	"github.com/miekg/dns"
 	"math/rand"
+
+	"github.com/miekg/dns"
 )
 
+// Picker func
 func (label *Label) Picker(qtype uint16, max int) Records {
 
 	if qtype == dns.TypeANY {
 		result := make([]Record, 0)
 		for rtype := range label.Records {
 
-			rtype_records := label.Picker(rtype, max)
+			rtypeRecords := label.Picker(rtype, max)
 
-			tmp_result := make(Records, len(result)+len(rtype_records))
+			tmpResult := make(Records, len(result)+len(rtypeRecords))
 
-			copy(tmp_result, result)
-			copy(tmp_result[len(result):], rtype_records)
-			result = tmp_result
+			copy(tmpResult, result)
+			copy(tmpResult[len(result):], rtypeRecords)
+			result = tmpResult
 		}
 
 		return result
 	}
 
-	if label_rr := label.Records[qtype]; label_rr != nil {
+	if labelRR := label.Records[qtype]; labelRR != nil {
 
 		var servers []Record
-		tmpservers := make([]Record, len(label_rr))
-		copy(tmpservers, label_rr)
+		tmpservers := make([]Record, len(labelRR))
+		copy(tmpservers, labelRR)
 		sum := label.Weight[qtype]
 		backupcount := 0
 
@@ -53,13 +55,13 @@ func (label *Label) Picker(qtype uint16, max int) Records {
 					}
 				}
 			} else {
-				return label_rr
+				return labelRR
 			}
 		}
 
-		rr_count := len(servers)
-		if max > rr_count {
-			max = rr_count
+		rrCount := len(servers)
+		if max > rrCount {
+			max = rrCount
 		}
 
 		result := make([]Record, max)

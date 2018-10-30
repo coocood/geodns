@@ -1,17 +1,19 @@
 package main
 
 import (
-	"code.google.com/p/gcfg"
 	"fmt"
-	"github.com/howeyc/fsnotify"
 	"log"
 	"os"
 	"time"
+
+	"github.com/howeyc/fsnotify"
+	"gopkg.in/gcfg.v1"
 )
 
+// AppConfig type
 type AppConfig struct {
 	StatHat struct {
-		ApiKey string
+		APIKey string
 	}
 	Flags struct {
 		HasStatHat bool
@@ -21,6 +23,7 @@ type AppConfig struct {
 	}
 }
 
+// Config var
 var Config = new(AppConfig)
 
 func configWatcher(fileName string) {
@@ -80,7 +83,7 @@ func configReader(fileName string) error {
 		return err
 	}
 
-	cfg.Flags.HasStatHat = len(cfg.StatHat.ApiKey) > 0
+	cfg.Flags.HasStatHat = len(cfg.StatHat.APIKey) > 0
 
 	// log.Println("STATHAT APIKEY:", cfg.StatHat.ApiKey)
 	// log.Println("STATHAT FLAG  :", cfg.Flags.HasStatHat)

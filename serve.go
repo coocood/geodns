@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/miekg/dns"
 	"log"
 	"net"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/miekg/dns"
 )
 
 func getQuestionName(z *Zone, req *dns.Msg) string {
@@ -36,20 +37,20 @@ func serve(w dns.ResponseWriter, req *dns.Msg, z *Zone) {
 
 	z.Metrics.LabelStats.Add(label)
 
-	realIp, _, _ := net.SplitHostPort(w.RemoteAddr().String())
+	realIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
 
-	z.Metrics.ClientStats.Add(realIp)
+	z.Metrics.ClientStats.Add(realIP)
 
 	var ip net.IP // EDNS or real IP
 	var edns *dns.EDNS0_SUBNET
-	var opt_rr *dns.OPT
+	var optRR *dns.OPT
 
 	for _, extra := range req.Extra {
 
 		switch extra.(type) {
 		case *dns.OPT:
 			for _, o := range extra.(*dns.OPT).Option {
-				opt_rr = extra.(*dns.OPT)
+				optRR = extra.(*dns.OPT)
 				switch e := o.(type) {
 				case *dns.EDNS0_NSID:
 					// do stuff with e.Nsid
@@ -66,7 +67,7 @@ func serve(w dns.ResponseWriter, req *dns.Msg, z *Zone) {
 	}
 
 	if len(ip) == 0 { // no edns subnet
-		ip = net.ParseIP(realIp)
+		ip = net.ParseIP(realIP)
 	}
 
 	targets, netmask := z.Options.Targeting.GetTargets(ip)
@@ -85,7 +86,7 @@ func serve(w dns.ResponseWriter, req *dns.Msg, z *Zone) {
 				netmask = 16
 			}
 			edns.SourceScope = uint8(netmask)
-			m.Extra = append(m.Extra, opt_rr)
+			m.Extra = append(m.Extra, optRR)
 		}
 	}
 
@@ -220,20 +221,20 @@ func serveWithAdditionalAnswer(w dns.ResponseWriter, req *dns.Msg, z *Zone) {
 
 	z.Metrics.LabelStats.Add(label)
 
-	realIp, _, _ := net.SplitHostPort(w.RemoteAddr().String())
+	realIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
 
-	z.Metrics.ClientStats.Add(realIp)
+	z.Metrics.ClientStats.Add(realIP)
 
 	var ip net.IP // EDNS or real IP
 	var edns *dns.EDNS0_SUBNET
-	var opt_rr *dns.OPT
+	var optRR *dns.OPT
 
 	for _, extra := range req.Extra {
 
 		switch extra.(type) {
 		case *dns.OPT:
 			for _, o := range extra.(*dns.OPT).Option {
-				opt_rr = extra.(*dns.OPT)
+				optRR = extra.(*dns.OPT)
 				switch e := o.(type) {
 				case *dns.EDNS0_NSID:
 					// do stuff with e.Nsid
@@ -250,7 +251,7 @@ func serveWithAdditionalAnswer(w dns.ResponseWriter, req *dns.Msg, z *Zone) {
 	}
 
 	if len(ip) == 0 { // no edns subnet
-		ip = net.ParseIP(realIp)
+		ip = net.ParseIP(realIP)
 	}
 
 	targets, netmask := z.Options.Targeting.GetTargets(ip)
@@ -269,7 +270,7 @@ func serveWithAdditionalAnswer(w dns.ResponseWriter, req *dns.Msg, z *Zone) {
 				netmask = 16
 			}
 			edns.SourceScope = uint8(netmask)
-			m.Extra = append(m.Extra, opt_rr)
+			m.Extra = append(m.Extra, optRR)
 		}
 	}
 

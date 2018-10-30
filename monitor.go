@@ -1,12 +1,8 @@
 package main
 
 import (
-	"code.google.com/p/go.net/websocket"
 	"encoding/json"
 	"fmt"
-	"github.com/abh/go-metrics"
-	"github.com/gorilla/mux"
-	"github.com/miekg/dns"
 	"html/template"
 	"io"
 	"log"
@@ -16,6 +12,11 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
+	"code.google.com/p/go.net/websocket"
+	"github.com/abh/go-metrics"
+	"github.com/gorilla/mux"
+	"github.com/miekg/dns"
 )
 
 // Initial status message on websocket
@@ -33,10 +34,11 @@ type statusStreamMsgStart struct {
 type statusStreamMsgUpdate struct {
 	Uptime     int     `json:"up"`
 	QueryCount int64   `json:"qs"`
-	Qps        int64   `json:"qps"`
-	Qps1m      float64 `json:"qps1m,omitempty"`
+	QPS        int64   `json:"qps"`
+	QPS1m      float64 `json:"qps1m,omitempty"`
 }
 
+// SetActiveMsg type
 type SetActiveMsg struct {
 	Record         string `json:"record"`
 	Active         bool   `json:"active"`
@@ -193,7 +195,7 @@ func monitor(zones Zones) {
 	lastQueryCount := qCounter.Count()
 
 	status := new(statusStreamMsgUpdate)
-	var lastQps1m float64
+	var lastQPS1m float64
 
 	for {
 		current := qCounter.Count()
@@ -202,15 +204,15 @@ func monitor(zones Zones) {
 
 		status.Uptime = int(time.Since(timeStarted).Seconds())
 		status.QueryCount = qCounter.Count()
-		status.Qps = newQueries
+		status.QPS = newQueries
 
 		// go-metrics only updates the rate every 5 seconds, so don't pretend otherwise
-		newQps1m := qCounter.Rate1()
-		if newQps1m != lastQps1m {
-			status.Qps1m = newQps1m
-			lastQps1m = newQps1m
+		newQPS1m := qCounter.Rate1()
+		if newQPS1m != lastQPS1m {
+			status.QPS1m = newQPS1m
+			lastQPS1m = newQPS1m
 		} else {
-			status.Qps1m = 0
+			status.QPS1m = 0
 		}
 
 		message, err := json.Marshal(status)
@@ -222,6 +224,7 @@ func monitor(zones Zones) {
 	}
 }
 
+// Version func
 func Version(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, `<html><head><title>GeoDNS `+
 		VERSION+`</title><body>`+
@@ -234,13 +237,20 @@ type rate struct {
 	Count   int64
 	Metrics ZoneMetrics
 }
+
+// Rates type
 type Rates []*rate
 
-func (s Rates) Len() int      { return len(s) }
+// Len func
+func (s Rates) Len() int { return len(s) }
+
+// Swap func
 func (s Rates) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 
+// RatesByCount type
 type RatesByCount struct{ Rates }
 
+// Less func
 func (s RatesByCount) Less(i, j int) bool {
 	ic := s.Rates[i].Count
 	jc := s.Rates[j].Count
@@ -271,6 +281,7 @@ func setupHistogramData(met *metrics.StandardHistogram, dat *histogramData) {
 	dat.Pct999 = percentiles[2]
 }
 
+// StatusServer func
 func StatusServer(zones Zones) func(http.ResponseWriter, *http.Request) {
 
 	return func(w http.ResponseWriter, req *http.Request) {
@@ -289,7 +300,12 @@ func StatusServer(zones Zones) func(http.ResponseWriter, *http.Request) {
 		}
 
 		tmpl := template.New("status_html")
-		tmpl, err := tmpl.Parse(string(status_html()))
+		asset, err := Asset("status.html")
+		if err != nil {
+			io.WriteString(w, err.Error())
+			return
+		}
+		tmpl, err = tmpl.Parse(string(asset))
 
 		if err != nil {
 			str := fmt.Sprintf("Could not parse template: %s", err)
@@ -345,6 +361,7 @@ func StatusServer(zones Zones) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
+// SetActive func
 func SetActive(zones Zones, action bool) func(http.ResponseWriter, *http.Request) {
 
 	return func(w http.ResponseWriter, req *http.Request) {

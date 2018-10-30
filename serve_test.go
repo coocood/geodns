@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/miekg/dns"
-	. "launchpad.net/gocheck"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/miekg/dns"
+	. "gopkg.in/check.v1"
 )
 
 const (

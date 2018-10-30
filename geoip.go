@@ -1,14 +1,16 @@
 package main
 
 import (
-	"github.com/abh/geodns/countries"
-	"github.com/abh/geoip"
 	"log"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/abh/geodns/countries"
+	"github.com/abh/geoip"
 )
 
+// GeoIP type
 type GeoIP struct {
 	country         *geoip.GeoIP
 	hasCountry      bool
@@ -25,6 +27,7 @@ type GeoIP struct {
 
 var geoIP = new(GeoIP)
 
+// GetCountry func
 func (g *GeoIP) GetCountry(ip net.IP) (country, continent string, netmask int) {
 	if g.country == nil {
 		return "", "", 0
@@ -38,6 +41,7 @@ func (g *GeoIP) GetCountry(ip net.IP) (country, continent string, netmask int) {
 	return
 }
 
+// GetCountryRegion func
 func (g *GeoIP) GetCountryRegion(ip net.IP) (country, continent, regionGroup, region string, netmask int) {
 	if g.city == nil {
 		log.Println("No city database available")
@@ -65,6 +69,7 @@ func (g *GeoIP) GetCountryRegion(ip net.IP) (country, continent, regionGroup, re
 	return
 }
 
+// GetASN func
 func (g *GeoIP) GetASN(ip net.IP) (asn string, netmask int) {
 	if g.asn == nil {
 		log.Println("No asn database available")

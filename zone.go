@@ -1,25 +1,29 @@
 package main
 
 import (
-	"github.com/abh/go-metrics"
-	"github.com/miekg/dns"
 	"strings"
 	"time"
+
+	"github.com/abh/go-metrics"
+	"github.com/miekg/dns"
 )
 
+// ZoneOptions type
 type ZoneOptions struct {
 	Serial    int
-	Ttl       int
+	TTL       int
 	MaxHosts  int
 	Contact   string
 	Targeting TargetOptions
 }
 
+// ZoneLogging type
 type ZoneLogging struct {
 	StatHat    bool
 	StatHatAPI string
 }
 
+// Record type
 type Record struct {
 	RR     dns.RR
 	Weight int
@@ -27,32 +31,41 @@ type Record struct {
 	Backup bool
 }
 
+// Records type
 type Records []Record
 
-func (s Records) Len() int      { return len(s) }
+// Len func
+func (s Records) Len() int { return len(s) }
+
+// Swap func
 func (s Records) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 
+// RecordsByWeight type
 type RecordsByWeight struct{ Records }
 
+// Less func
 func (s RecordsByWeight) Less(i, j int) bool { return s.Records[i].Weight > s.Records[j].Weight }
 
+// Label type
 type Label struct {
 	Label    string
 	MaxHosts int
-	Ttl      int
+	TTL      int
 	Records  map[uint16]Records
 	Weight   map[uint16]int
 }
 
 type labels map[string]*Label
 
+// ZoneMetrics type
 type ZoneMetrics struct {
-	Queries     *metrics.StandardMeter
-	EdnsQueries *metrics.StandardMeter
-	LabelStats  *zoneLabelStats
-	ClientStats *zoneLabelStats
+	Queries     metrics.Meter
+	EdnsQueries metrics.Meter
+	LabelStats  *ZoneLabelStats
+	ClientStats *ZoneLabelStats
 }
 
+// Zone type
 type Zone struct {
 	Origin     string
 	Labels     labels
@@ -65,6 +78,7 @@ type Zone struct {
 
 type qTypes []uint16
 
+// NewZone func
 func NewZone(name string) *Zone {
 	zone := new(Zone)
 	zone.Labels = make(labels)
@@ -72,7 +86,7 @@ func NewZone(name string) *Zone {
 	zone.LabelCount = dns.CountLabel(zone.Origin)
 
 	// defaults
-	zone.Options.Ttl = 120
+	zone.Options.TTL = 120
 	zone.Options.MaxHosts = 2
 	zone.Options.Contact = "support.bitnames.com"
 	zone.Options.Targeting = TargetGlobal + TargetCountry + TargetContinent
@@ -80,6 +94,7 @@ func NewZone(name string) *Zone {
 	return zone
 }
 
+// SetupMetrics func
 func (z *Zone) SetupMetrics(old *Zone) {
 	if old != nil &&
 		old.Metrics.Queries != nil &&
@@ -97,6 +112,7 @@ func (z *Zone) SetupMetrics(old *Zone) {
 	}
 }
 
+// Close func
 func (z *Zone) Close() {
 	metrics.Unregister(z.Origin + " queries")
 	metrics.Unregister(z.Origin + " EDNS queries")
@@ -112,12 +128,13 @@ func (l *Label) pickerRR(dnsType uint16) dns.RR {
 	return l.Picker(dnsType, 1)[0].RR
 }
 
+// AddLabel func
 func (z *Zone) AddLabel(k string) *Label {
 	k = strings.ToLower(k)
 	z.Labels[k] = new(Label)
 	label := z.Labels[k]
 	label.Label = k
-	label.Ttl = z.Options.Ttl
+	label.TTL = z.Options.TTL
 	label.MaxHosts = z.Options.MaxHosts
 
 	label.Records = make(map[uint16]Records)
@@ -126,6 +143,7 @@ func (z *Zone) AddLabel(k string) *Label {
 	return label
 }
 
+// SoaRR func
 func (z *Zone) SoaRR() dns.RR {
 	return z.Labels[""].firstRR(dns.TypeSOA)
 }

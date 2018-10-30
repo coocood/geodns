@@ -30,8 +30,9 @@ import (
 	"time"
 )
 
-// VERSION is the current version of GeoDNS
-var VERSION string = "2.4.8"
+// VERSION return current version
+var VERSION = "2.4.8"
+
 var buildTime string
 var gitVersion string
 

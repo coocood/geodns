@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// DayDuration type
 type DayDuration struct {
 	time.Duration
 }

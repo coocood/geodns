@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/abh/errorutil"
-	"github.com/miekg/dns"
 	"io/ioutil"
 	"log"
 	"net"
@@ -15,6 +13,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/abh/errorutil"
+	"github.com/miekg/dns"
 )
 
 // Zones maps domain names to zone data
@@ -160,7 +161,7 @@ func readZoneFile(zoneName, fileName string) (zone *Zone, zerr error) {
 		switch k {
 
 		case "ttl":
-			zone.Options.Ttl = valueToInt(v)
+			zone.Options.TTL = valueToInt(v)
 		case "serial":
 			zone.Options.Serial = valueToInt(v)
 		case "contact":
@@ -230,9 +231,9 @@ func setupZoneData(data map[string]interface{}, Zone *Zone) {
 		"spf":   dns.TypeSPF,
 	}
 
-	for dk, dv_inter := range data {
+	for dk, dvInter := range data {
 
-		dv := dv_inter.(map[string]interface{})
+		dv := dvInter.(map[string]interface{})
 
 		//log.Printf("K %s V %s TYPE-V %T\n", dk, dv, dv)
 
@@ -245,7 +246,7 @@ func setupZoneData(data map[string]interface{}, Zone *Zone) {
 				label.MaxHosts = valueToInt(rdata)
 				continue
 			case "ttl":
-				label.Ttl = valueToInt(rdata)
+				label.TTL = valueToInt(rdata)
 				continue
 			}
 
@@ -296,7 +297,7 @@ func setupZoneData(data map[string]interface{}, Zone *Zone) {
 
 				var h dns.RR_Header
 				// log.Println("TTL OPTIONS", Zone.Options.Ttl)
-				h.Ttl = uint32(label.Ttl)
+				h.Ttl = uint32(label.TTL)
 				h.Class = dns.ClassINET
 				h.Rrtype = dnsType
 				h.Name = label.Label + "." + Zone.Origin + "."
@@ -495,10 +496,10 @@ func setupZoneData(data map[string]interface{}, Zone *Zone) {
 				}
 			}
 		}
-		if Zone.Labels[k].Ttl > 0 {
+		if Zone.Labels[k].TTL > 0 {
 			for _, records := range Zone.Labels[k].Records {
 				for _, r := range records {
-					r.RR.Header().Ttl = uint32(Zone.Labels[k].Ttl)
+					r.RR.Header().Ttl = uint32(Zone.Labels[k].TTL)
 				}
 			}
 		}
@@ -558,7 +559,7 @@ func setupSOA(Zone *Zone) {
 		primaryNs = record[0].RR.(*dns.NS).Ns
 	}
 
-	ttl := Zone.Options.Ttl * 10
+	ttl := Zone.Options.TTL * 10
 	if ttl > 3600 {
 		ttl = 3600
 	}
