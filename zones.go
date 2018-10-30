@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/abh/errorutil"
@@ -20,6 +21,15 @@ import (
 
 // Zones maps domain names to zone data
 type Zones map[string]*Zone
+
+// ZoneList type
+type ZoneList struct {
+	sync.RWMutex
+
+	List map[string]*Zone
+}
+
+var zonelist = &ZoneList{List: make(map[string]*Zone)}
 
 func zonesReader(dirName string, zones Zones) {
 	for {
@@ -33,6 +43,10 @@ func addHandler(zones Zones, name string, config *Zone) {
 	config.SetupMetrics(oldZone)
 	zones[name] = config
 	dns.HandleFunc(name, setupServerFunc(config))
+
+	zonelist.Lock()
+	zonelist.List[dns.Fqdn(name)] = config
+	zonelist.Unlock()
 }
 
 func zonesReadDir(dirName string, zones Zones) error {

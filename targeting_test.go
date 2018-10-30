@@ -12,7 +12,7 @@ type TargetingSuite struct {
 var _ = Suite(&TargetingSuite{})
 
 func (s *TargetingSuite) SetUpSuite(c *C) {
-	Config.GeoIP.Directory = "db"
+	Config.GeoIP.Directory = "/usr/local/var/GeoIP"
 }
 
 func (s *TargetingSuite) TestTargetString(c *C) {
@@ -62,5 +62,5 @@ func (s *TargetingSuite) TestGetTargets(c *C) {
 
 	tgt, _ = parseTargets("@ continent regiongroup country region asn ip")
 	targets, _ = tgt.GetTargets(ip)
-	c.Check(targets, DeepEquals, []string{"207.171.7.51", "207.171.7.0", "as53582", "us-ca", "us-west", "us", "north-america", "@"})
+	c.Check(targets, DeepEquals, []string{"207.171.7.51", "as53582", "us-ca", "us-west", "us", "north-america", "@"})
 }

@@ -4,7 +4,24 @@ import (
 	"log"
 	"net"
 	"strings"
+
+	"github.com/semihalev/dns"
 )
+
+func findZone(name string) (*Zone, bool) {
+	name = strings.ToLower(name)
+
+	zonelist.RLock()
+	defer zonelist.RUnlock()
+
+	for off, end := 0, false; !end; off, end = dns.NextLabel(name, off) {
+		if z, ok := zonelist.List[name[off:]]; ok {
+			return z, ok
+		}
+	}
+
+	return nil, false
+}
 
 func getInterfaces() []string {
 
